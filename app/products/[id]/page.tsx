@@ -311,7 +311,7 @@ export default function ProductDetailPage() {
         <div style={{ marginTop: "4rem" }}>
           <div style={{ display: "flex", gap: "0", borderBottom: "1px solid #2A2A2A" }}>
             {["description", "benefits", "reviews"].map(t => (
-              <button key={t} onClick={() => setTab(t)}
+              <button key={t} onClick={() => setTab(t as "description" | "benefits" | "reviews")}
                 style={{ background: "none", border: "none", borderBottom: tab === t ? "2px solid #C9A84C" : "2px solid transparent", color: tab === t ? "#C9A84C" : "#666", padding: "14px 24px", cursor: "pointer", fontFamily: "Cinzel, serif", fontSize: "0.8rem", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "-1px" }}>
                 {t}
               </button>
