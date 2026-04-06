@@ -75,42 +75,42 @@ export default function ProfilePage() {
                 </div>
               ))}
             </div>
-            <h3 style={{ fontFamily: "Cinzel, serif", color: "#F5F0E8", marginBottom: "1rem", fontSize: "0.9rem" }}>RECENT ORDERS</h3>
-            {orders.slice(0, 2).map(o => (
-              <div key={o.id} style={{ background: "#161616", border: "1px solid #2A2A2A", padding: "1.25rem", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <p style={{ color: "#F5F0E8", fontWeight: 600, fontSize: "0.875rem" }}>{o.id}</p>
-                  <p style={{ color: "#666", fontSize: "0.8rem" }}>{o.date} · {o.items} items</p>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <p style={{ color: statusColor(o.status), fontSize: "0.8rem", marginBottom: "4px" }}>● {o.status}</p>
-                  <p style={{ color: "#C9A84C", fontFamily: "Cinzel, serif" }}>₹{o.total}</p>
-                </div>
-              </div>
-            ))}
+            {/* <h3 style={{ fontFamily: "Cinzel, serif", color: "#F5F0E8", marginBottom: "1rem", fontSize: "0.9rem" }}>RECENT ORDERS</h3> */}
+            {/* {orders.slice(0, 2).map(o => (
+              // <div key={o.id} style={{ background: "#161616", border: "1px solid #2A2A2A", padding: "1.25rem", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              //   <div>
+              //     <p style={{ color: "#F5F0E8", fontWeight: 600, fontSize: "0.875rem" }}>{o.id}</p>
+              //     <p style={{ color: "#666", fontSize: "0.8rem" }}>{o.date} · {o.items} items</p>
+              //   </div>
+              //   <div style={{ textAlign: "right" }}>
+              //     <p style={{ color: statusColor(o.status), fontSize: "0.8rem", marginBottom: "4px" }}>● {o.status}</p>
+              //     <p style={{ color: "#C9A84C", fontFamily: "Cinzel, serif" }}>₹{o.total}</p>
+              //   </div>
+              // </div>
+            ))} */}
           </div>
         )}
 
-        {tab === "orders" && (
-          <div>
-            <h2 style={{ fontFamily: "Cinzel, serif", color: "#C9A84C", marginBottom: "1.5rem", fontSize: "1.2rem" }}>MY ORDERS</h2>
-            {orders.map(o => (
-              <div key={o.id} style={{ background: "#161616", border: "1px solid #2A2A2A", padding: "1.5rem", marginBottom: "1rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-                  <div>
-                    <p style={{ color: "#F5F0E8", fontWeight: 600 }}>{o.id}</p>
-                    <p style={{ color: "#666", fontSize: "0.8rem" }}>Placed on {o.date}</p>
-                  </div>
-                  <span style={{ background: statusColor(o.status) + "22", color: statusColor(o.status), padding: "4px 12px", fontSize: "0.75rem", fontFamily: "Cinzel, serif" }}>{o.status}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "1rem", borderTop: "1px solid #1A1A1A" }}>
-                  <span style={{ color: "#C8C0B0", fontSize: "0.875rem" }}>{o.items} items</span>
-                  <span style={{ color: "#C9A84C", fontFamily: "Cinzel, serif", fontSize: "1.1rem" }}>₹{o.total}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* {tab === "orders" && (
+          // <div>
+          //   <h2 style={{ fontFamily: "Cinzel, serif", color: "#C9A84C", marginBottom: "1.5rem", fontSize: "1.2rem" }}>MY ORDERS</h2>
+          //   {orders.map(o => (
+          //     <div key={o.id} style={{ background: "#161616", border: "1px solid #2A2A2A", padding: "1.5rem", marginBottom: "1rem" }}>
+          //       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+          //         <div>
+          //           <p style={{ color: "#F5F0E8", fontWeight: 600 }}>{o.id}</p>
+          //           <p style={{ color: "#666", fontSize: "0.8rem" }}>Placed on {o.date}</p>
+          //         </div>
+          //         <span style={{ background: statusColor(o.status) + "22", color: statusColor(o.status), padding: "4px 12px", fontSize: "0.75rem", fontFamily: "Cinzel, serif" }}>{o.status}</span>
+          //       </div>
+          //       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "1rem", borderTop: "1px solid #1A1A1A" }}>
+          //         <span style={{ color: "#C8C0B0", fontSize: "0.875rem" }}>{o.items} items</span>
+          //         <span style={{ color: "#C9A84C", fontFamily: "Cinzel, serif", fontSize: "1.1rem" }}>₹{o.total}</span>
+          //       </div>
+          //     </div>
+          //   ))}
+          // </div>
+        )} */}
 
         {tab === "wishlist" && (
           <div>
