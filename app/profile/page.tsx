@@ -18,7 +18,7 @@ export default function ProfilePage() {
   const { wishlist } = useStore();
   const wishlistProducts = products.filter(p => wishlist.includes(p.id));
 
-  const orders = [];
+  const orders = [{}];
 
   const statusColor = (s: string) => s === "Delivered" ? "#4CAF50" : s === "Processing" ? "#C9A84C" : "#666";
 
