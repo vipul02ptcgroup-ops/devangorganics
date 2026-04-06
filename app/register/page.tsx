@@ -24,7 +24,7 @@ export default function RegisterPage() {
             {[
               { field: "name", label: "Full Name", placeholder: "Your full name", Icon: User, type: "text" },
               { field: "email", label: "Email Address", placeholder: "you@example.com", Icon: Mail, type: "email" },
-              { field: "phone", label: "Phone Number", placeholder: "+91 98765 43210", Icon: Phone, type: "tel" },
+              { field: "phone", label: "Phone Number", placeholder: "+91 91208 79879", Icon: Phone, type: "tel" },
             ].map(({ field, label, placeholder, Icon, type }) => (
               <div key={field}>
                 <label style={{ display: "block", color: "#C8C0B0", fontSize: "0.8rem", marginBottom: "6px" }}>{label}</label>

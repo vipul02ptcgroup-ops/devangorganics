@@ -41,7 +41,7 @@ export default function CheckoutPage() {
                 <div><label style={labelStyle}>First Name</label><input style={inputStyle} placeholder="First name" /></div>
                 <div><label style={labelStyle}>Last Name</label><input style={inputStyle} placeholder="Last name" /></div>
                 <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Email</label><input type="email" style={inputStyle} placeholder="Email address" /></div>
-                <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Phone</label><input style={inputStyle} placeholder="+91 98765 43210" /></div>
+                <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Phone</label><input style={inputStyle} placeholder="+91 91208 79879" /></div>
                 <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Address Line 1</label><input style={inputStyle} placeholder="Street address, flat no." /></div>
                 <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Address Line 2</label><input style={inputStyle} placeholder="Landmark (optional)" /></div>
                 <div><label style={labelStyle}>City</label><input style={inputStyle} placeholder="City" /></div>

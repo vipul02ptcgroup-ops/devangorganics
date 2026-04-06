@@ -28,9 +28,9 @@ export default function ContactPage() {
         <div>
           <h2 style={{ fontFamily: "Cinzel, serif", color: "#C9A84C", fontSize: "1.1rem", marginBottom: "2rem", letterSpacing: "0.05em" }}>REACH US</h2>
           {[
-            { Icon: MapPin, title: "Our Store", detail: "123 Nature's Way, Ahmedabad, Gujarat 380001" },
-            { Icon: Phone, title: "Call Us", detail: "+91 98765 43210" },
-            { Icon: Mail, title: "Email Us", detail: "hello@devangorganics.com" },
+            { Icon: MapPin, title: "Our Store", detail: "Virar (East), Maharashtra, India" },
+            { Icon: Phone, title: "Call Us", detail: "+91 91208 79879" },
+            { Icon: Mail, title: "Email Us", detail: "ptcvirar@gmail.com" },
             { Icon: Clock, title: "Working Hours", detail: "Mon–Sat: 9am – 6pm IST" },
           ].map(({ Icon, title, detail }) => (
             <div key={title} style={{ display: "flex", gap: "16px", marginBottom: "2rem", alignItems: "flex-start" }}>

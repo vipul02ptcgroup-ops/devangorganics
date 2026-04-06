@@ -19,7 +19,7 @@ export default function Footer() {
           <p style={{ color: "#C8C0B0", fontSize: "0.875rem", lineHeight: 1.8, marginBottom: "1.5rem", maxWidth: "280px" }}>
             Bringing nature's finest organic products to your doorstep. Rooted in Ayurveda, crafted with love, delivered with trust.
           </p>
-          <div style={{ display: "flex", gap: "12px" }}>
+          {/* <div style={{ display: "flex", gap: "12px" }}>
             {socialIcons.map((Icon, i) => (
               <a key={i} href="#" style={{ width: "38px", height: "38px", border: "1px solid #2A2A2A", display: "flex", alignItems: "center", justifyContent: "center", color: "#C8C0B0", transition: "all 0.2s", textDecoration: "none" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#C9A84C"; (e.currentTarget as HTMLElement).style.color = "#C9A84C"; }}
@@ -27,7 +27,7 @@ export default function Footer() {
                 <Icon size={16} />
               </a>
             ))}
-          </div>
+          </div> */}
         </div>
 
         {/* Quick Links */}
@@ -62,9 +62,9 @@ export default function Footer() {
         <div>
           <h4 style={{ fontFamily: "Cinzel, serif", fontSize: "0.9rem", color: "#C9A84C", marginBottom: "1.5rem", letterSpacing: "0.1em" }}>CONTACT US</h4>
           {[
-            { Icon: MapPin, text: "123 Nature's Way, Ahmedabad, Gujarat 380001" },
-            { Icon: Phone, text: "+91 98765 43210" },
-            { Icon: Mail, text: "hello@devangorganics.com" },
+            { Icon: MapPin, text: "Virar (East), Maharashtra, India" },
+            { Icon: Phone, text: "+91 91208 79879" },
+            { Icon: Mail, text: "ptcvirar@gmail.com" },
           ].map(({ Icon, text }, i) => (
             <div key={i} style={{ display: "flex", gap: "12px", marginBottom: "1rem", alignItems: "flex-start" }}>
               <Icon size={16} style={{ color: "#C9A84C", flexShrink: 0, marginTop: "3px" }} />

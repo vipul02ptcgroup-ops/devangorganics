@@ -10,7 +10,7 @@ const tabs = [
   { key: "orders", label: "My Orders", Icon: Package },
   { key: "wishlist", label: "Wishlist", Icon: Heart },
   { key: "addresses", label: "Addresses", Icon: MapPin },
-  { key: "settings", label: "Settings", Icon: Settings },
+  // { key: "settings", label: "Settings", Icon: Settings },
 ];
 
 export default function ProfilePage() {
@@ -18,11 +18,7 @@ export default function ProfilePage() {
   const { wishlist } = useStore();
   const wishlistProducts = products.filter(p => wishlist.includes(p.id));
 
-  const orders = [
-    { id: "ORD-2024-001", date: "Dec 15, 2024", status: "Delivered", total: 1248, items: 3 },
-    { id: "ORD-2024-002", date: "Nov 28, 2024", status: "Processing", total: 799, items: 1 },
-    { id: "ORD-2024-003", date: "Oct 10, 2024", status: "Delivered", total: 2100, items: 5 },
-  ];
+  const orders = [];
 
   const statusColor = (s: string) => s === "Delivered" ? "#4CAF50" : s === "Processing" ? "#C9A84C" : "#666";
 
@@ -33,13 +29,13 @@ export default function ProfilePage() {
         {/* User card */}
         <div style={{ background: "#161616", border: "1px solid #2A2A2A", padding: "1.5rem", marginBottom: "1rem", textAlign: "center" }}>
           <div style={{ width: "70px", height: "70px", background: "linear-gradient(135deg, #C9A84C, #9A7A2E)", borderRadius: "50%", margin: "0 auto 1rem", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", fontFamily: "Cinzel, serif", fontWeight: 700, color: "#0A0A0A" }}>
-            PK
+            GU
           </div>
-          <h3 style={{ fontFamily: "Cinzel, serif", color: "#F5F0E8", marginBottom: "4px" }}>Priya Kumar</h3>
-          <p style={{ color: "#666", fontSize: "0.8rem" }}>priya.kumar@gmail.com</p>
+          <h3 style={{ fontFamily: "Cinzel, serif", color: "#F5F0E8", marginBottom: "4px" }}>Guest User</h3>
+          <p style={{ color: "#666", fontSize: "0.8rem" }}>guestuser@gmail.com</p>
           <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #2A2A2A" }}>
             <div style={{ textAlign: "center" }}>
-              <p style={{ color: "#C9A84C", fontFamily: "Cinzel, serif", fontSize: "1.1rem" }}>12</p>
+              <p style={{ color: "#C9A84C", fontFamily: "Cinzel, serif", fontSize: "1.1rem" }}>0</p>
               <p style={{ color: "#666", fontSize: "0.7rem" }}>Orders</p>
             </div>
             <div style={{ textAlign: "center" }}>
@@ -69,7 +65,7 @@ export default function ProfilePage() {
           <div>
             <h2 style={{ fontFamily: "Cinzel, serif", color: "#C9A84C", marginBottom: "1.5rem", fontSize: "1.2rem", letterSpacing: "0.05em" }}>ACCOUNT OVERVIEW</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
-              {[["12", "Total Orders", Package], ["₹8,420", "Total Spent", Star], [wishlist.length.toString(), "Wishlist Items", Heart]].map(([val, label, Icon]: any) => (
+              {[["0", "Total Orders", Package], ["₹0", "Total Spent", Star], [wishlist.length.toString(), "Wishlist Items", Heart]].map(([val, label, Icon]: any) => (
                 <div key={label} style={{ background: "#161616", border: "1px solid #2A2A2A", padding: "1.5rem", display: "flex", gap: "1rem", alignItems: "center" }}>
                   <Icon size={24} style={{ color: "#C9A84C" }} />
                   <div>
@@ -134,16 +130,16 @@ export default function ProfilePage() {
 
         {tab === "addresses" && (
           <div>
-            <h2 style={{ fontFamily: "Cinzel, serif", color: "#C9A84C", marginBottom: "1.5rem", fontSize: "1.2rem" }}>MY ADDRESSES</h2>
-            <div style={{ background: "#161616", border: "1px solid #C9A84C", padding: "1.5rem", marginBottom: "1rem", position: "relative" }}>
+            <h2 style={{ fontFamily: "Cinzel, serif", color: "#C9A84C", marginBottom: "1.5rem", fontSize: "1.2rem" }}>ADDRESS</h2>
+            {/* <div style={{ background: "#161616", border: "1px solid #C9A84C", padding: "1.5rem", marginBottom: "1rem", position: "relative" }}>
               <span style={{ position: "absolute", top: "12px", right: "12px", background: "rgba(201,168,76,0.15)", color: "#C9A84C", padding: "2px 8px", fontSize: "0.7rem" }}>DEFAULT</span>
               <p style={{ color: "#F5F0E8", fontWeight: 600, marginBottom: "8px" }}>Home</p>
               <p style={{ color: "#C8C0B0", fontSize: "0.875rem", lineHeight: 1.7 }}>Flat 402, Green Valley Apartments,<br />Vastrapur, Ahmedabad - 380015<br />Gujarat, India</p>
               <button style={{ marginTop: "1rem", background: "transparent", border: "1px solid #2A2A2A", color: "#C8C0B0", padding: "8px 16px", cursor: "pointer", fontSize: "0.8rem" }}>Edit Address</button>
-            </div>
-            <button style={{ width: "100%", background: "transparent", border: "1px dashed #2A2A2A", padding: "1.5rem", color: "#666", cursor: "pointer", fontFamily: "Cinzel, serif", fontSize: "0.8rem", letterSpacing: "0.05em" }}>
+            </div> */}
+            {/* <button style={{ width: "100%", background: "transparent", border: "1px dashed #2A2A2A", padding: "1.5rem", color: "#666", cursor: "pointer", fontFamily: "Cinzel, serif", fontSize: "0.8rem", letterSpacing: "0.05em" }}>
               + ADD NEW ADDRESS
-            </button>
+            </button> */}
           </div>
         )}
 
@@ -153,7 +149,7 @@ export default function ProfilePage() {
             <div style={{ background: "#161616", border: "1px solid #2A2A2A", padding: "2rem", marginBottom: "1rem" }}>
               <h3 style={{ fontFamily: "Cinzel, serif", color: "#F5F0E8", fontSize: "0.9rem", marginBottom: "1.5rem" }}>PERSONAL INFORMATION</h3>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                {[["First Name", "Priya"], ["Last Name", "Kumar"], ["Email", "priya.kumar@gmail.com"], ["Phone", "+91 98765 43210"]].map(([label, val]) => (
+                {[["First Name", "Priya"], ["Last Name", "Kumar"], ["Email", "priya.kumar@gmail.com"], ["Phone", "+91 91208 79879"]].map(([label, val]) => (
                   <div key={label}>
                     <label style={{ display: "block", color: "#C8C0B0", fontSize: "0.8rem", marginBottom: "6px" }}>{label}</label>
                     <input defaultValue={val} style={{ width: "100%", padding: "10px 16px", background: "#0A0A0A", border: "1px solid #2A2A2A", color: "#F5F0E8", fontSize: "0.875rem" }} />

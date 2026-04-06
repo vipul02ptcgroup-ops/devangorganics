@@ -22,8 +22,8 @@ export default function AdminSettings() {
               {[
                 ["Store Name", "Devang Organics"],
                 ["Tagline", "Pure & Natural Products"],
-                ["Email", "hello@devangorganics.com"],
-                ["Phone", "+91 98765 43210"],
+                ["Email", "ptcvirar@gmail.com"],
+                ["Phone", "+91 91208 79879"],
               ].map(([l, v]) => (
                 <div key={l}>
                   <label className={labelClass}>{l}</label>
@@ -33,7 +33,7 @@ export default function AdminSettings() {
               <div className="col-span-full">
                 <label className={labelClass}>Store Address</label>
                 <textarea
-                  defaultValue="123 Nature's Way, Ahmedabad, Gujarat 380001"
+                  defaultValue="Virar (East), Maharashtra, India"
                   rows={2}
                   className={`${inputClass} resize-y`}
                 />
