@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
+import { ProductProvider } from "@/lib/products";
 import { StoreProvider } from "@/lib/store";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
 
@@ -17,9 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <AuthProvider>
-          <StoreProvider>
-            <ConditionalLayout>{children}</ConditionalLayout>
-          </StoreProvider>
+          <ProductProvider>
+            <StoreProvider>
+              <ConditionalLayout>{children}</ConditionalLayout>
+            </StoreProvider>
+          </ProductProvider>
         </AuthProvider>
       </body>
     </html>

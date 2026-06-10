@@ -2,7 +2,7 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductCard from "@/components/products/ProductCard";
-import { products, categories } from "@/lib/data";
+import { useProducts } from "@/lib/products";
 import {
   Filter,
   SlidersHorizontal,
@@ -28,6 +28,7 @@ const categoryIconMap: Record<string, React.ReactNode> = {
 
 function ProductsContent() {
   const searchParams = useSearchParams();
+  const { products, categories, loading } = useProducts();
   const catParam = searchParams.get("category") || "";
   const [selectedCat, setSelectedCat] = useState(catParam);
   const [sortBy, setSortBy] = useState("featured");
@@ -203,7 +204,12 @@ function ProductsContent() {
           )}
 
           {/* Product Grid */}
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <Leaf size={48} className="text-[#C9A84C] mb-4 animate-pulse" />
+              <p className="text-[#C9A84C] text-lg">Loading products from Firebase...</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <Package size={48} className="text-[#2A2A2A] mb-4" />
               <p className="text-[#555] text-lg">No products found</p>

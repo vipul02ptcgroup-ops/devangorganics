@@ -8,8 +8,8 @@ import { useStore } from "@/lib/store";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "All Products", href: "/products" },
-  { label: "Organic Tea", href: "/products?category=organic-tea" },
-  { label: "Natural Herb's", href: "/products?category=natural-herbs" },
+  { label: "Organic Tea", href: "/products?category=herb-tea" },
+  { label: "Natural Herb's", href: "/products?category=herbs" },
   { label: "Natural Soap's", href: "/products?category=natural-soaps" },
   { label: "Pickle's", href: "/products?category=pickles" },
   { label: "About", href: "/about" },
@@ -18,9 +18,17 @@ const navLinks = [
 
 export default function Header() {
   const { cartCount, setCartOpen } = useStore();
-  const { user, isAdmin } = useUserRole();
+  const { user, userProfile, isAdmin, loading, roleLoading } = useUserRole();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const isCheckingSession = loading || roleLoading;
+  const profileName = userProfile?.name || user?.displayName || user?.email || "Account";
+  const initials = profileName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
 
   return (
     <header className="sticky top-0 z-50 bg-[#0A0A0A] border-b border-[#2A2A2A]">
@@ -78,8 +86,19 @@ export default function Header() {
           </button>
 
           {/* User */}
-          <Link href={user ? "/profile" : "/login"} className="text-[#C8C0B0] hover:text-[#C9A84C] transition">
-            <User size={20} />
+          <Link
+            href={user ? "/profile" : "/login"}
+            className="text-[#C8C0B0] hover:text-[#C9A84C] transition"
+            aria-label={user ? profileName : "Login"}
+            title={user ? profileName : "Login"}
+          >
+            {user ? (
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#C9A84C33] bg-[#161616] text-[0.72rem] font-semibold text-[#C9A84C]">
+                {isCheckingSession ? "..." : initials || "CU"}
+              </span>
+            ) : (
+              <User size={20} />
+            )}
           </Link>
 
           {/* Wishlist */}

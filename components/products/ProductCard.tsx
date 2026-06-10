@@ -1,8 +1,10 @@
 "use client";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Heart, ShoppingCart, Star, Eye, Package, Leaf, Coffee, Sparkles, Utensils } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { Product } from "@/lib/data";
+import { getProductImageCandidates } from "@/lib/product-images";
 
 const categoryIcons: Record<string, React.ReactNode> = {
   "herbs":       <Leaf size={40} className="text-emerald-400 opacity-70" />,
@@ -23,6 +25,17 @@ export default function ProductCard({ product }: { product: Product }) {
   const isWishlisted = wishlist.includes(product.id);
   const icon = categoryIcons[product.category] ?? <Package size={40} className="text-stone-400 opacity-70" />;
   const bg = categoryBg[product.category] ?? "from-stone-900/40 to-stone-800/20";
+  const imageCandidates = useMemo(
+    () => getProductImageCandidates(product.image || "", product.name),
+    [product.image, product.name]
+  );
+  const [imageIndex, setImageIndex] = useState(0);
+
+  useEffect(() => {
+    setImageIndex(0);
+  }, [product.id, product.image, product.name]);
+
+  const activeImage = imageCandidates[imageIndex];
 
   return (
     <div className="group relative bg-[#161616] border border-[#2A2A2A] hover:border-[#C9A84C] hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(201,168,76,0.12)] transition-all duration-300 overflow-hidden flex flex-col">
@@ -35,12 +48,16 @@ export default function ProductCard({ product }: { product: Product }) {
           style={{ backgroundImage: "radial-gradient(circle, #C9A84C 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
 
         {/* Product image or fallback icon */}
-        {product.image ? (
+        {activeImage ? (
           <img
-            src={`/${product.image}`}
+            src={activeImage}
             alt={product.name}
             className="h-40 w-full object-contain px-4 relative z-10 group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
+              if (imageIndex < imageCandidates.length - 1) {
+                setImageIndex((current) => current + 1);
+                return;
+              }
               (e.currentTarget as HTMLImageElement).style.display = "none";
               (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
             }}

@@ -2,9 +2,11 @@
 import Link from "next/link";
 import { ArrowRight, Leaf, Shield, Truck, Award, Star, ChevronRight, Coffee, Sparkles, Utensils } from "lucide-react";
 import ProductCard from "@/components/products/ProductCard";
-import { products, categories, testimonials } from "@/lib/data";
+import { testimonials } from "@/lib/data";
+import { useProducts } from "@/lib/products";
 
 export default function HomePage() {
+  const { products, categories, loading } = useProducts();
   const featured = products.slice(0, 4);
   const bestsellers = products.filter(p => p.badge === "Bestseller" || p.reviews > 100).slice(0, 4);
 
@@ -136,7 +138,13 @@ export default function HomePage() {
           </Link>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }} className="prod-grid">
-          {featured.map(p => <ProductCard key={p.id} product={p} />)}
+          {loading ? (
+            <div style={{ color: "#C9A84C", gridColumn: "1 / -1", textAlign: "center", padding: "2rem 0" }}>
+              Loading products from Firebase...
+            </div>
+          ) : (
+            featured.map(p => <ProductCard key={p.id} product={p} />)
+          )}
         </div>
         <style>{`@media(max-width:900px){.prod-grid{grid-template-columns:repeat(2,1fr)!important;}} @media(max-width:500px){.prod-grid{grid-template-columns:1fr!important;}}`}</style>
       </section>
@@ -170,7 +178,13 @@ export default function HomePage() {
           </Link>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }} className="prod-grid2">
-          {bestsellers.map(p => <ProductCard key={p.id} product={p} />)}
+          {loading ? (
+            <div style={{ color: "#C9A84C", gridColumn: "1 / -1", textAlign: "center", padding: "2rem 0" }}>
+              Loading products from Firebase...
+            </div>
+          ) : (
+            bestsellers.map(p => <ProductCard key={p.id} product={p} />)
+          )}
         </div>
         <style>{`@media(max-width:900px){.prod-grid2{grid-template-columns:repeat(2,1fr)!important;}} @media(max-width:500px){.prod-grid2{grid-template-columns:1fr!important;}}`}</style>
       </section>

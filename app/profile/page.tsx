@@ -4,8 +4,8 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User, Package, Heart, MapPin, LogOut, Star } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import { products } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
+import { useProducts } from "@/lib/products";
 import { useStore } from "@/lib/store";
 import ProductCard from "@/components/products/ProductCard";
 
@@ -19,7 +19,8 @@ const tabs = [
 function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, logout } = useAuth();
+  const { user, userProfile, logout, loading, roleLoading } = useAuth();
+  const { products, loading: productsLoading } = useProducts();
   const [tab, setTab] = useState("overview");
   const { wishlist } = useStore();
   const wishlistProducts = products.filter((p) => wishlist.includes(p.id));
@@ -31,20 +32,40 @@ function ProfileContent() {
     }
   }, [searchParams]);
 
-  const initials = (user?.displayName || user?.email || "Guest User")
+  const initials = (userProfile?.name || user?.displayName || userProfile?.email || user?.email || "Guest User")
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
 
-  const displayName = user?.displayName || "Customer";
-  const displayEmail = user?.email || "";
+  const displayName = userProfile?.name || user?.displayName || "Customer";
+  const displayEmail = userProfile?.email || user?.email || "";
+  const displayPhoto = userProfile?.photoURL || user?.photoURL || "";
+  const displayRole = userProfile?.role || "customer";
 
   const handleSignOut = async () => {
     await logout();
     router.replace("/login");
   };
+
+  if (loading || roleLoading) {
+    return (
+      <ProtectedRoute>
+        <div
+          style={{
+            minHeight: "60vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#C9A84C",
+          }}
+        >
+          Loading your profile...
+        </div>
+      </ProtectedRoute>
+    );
+  }
 
   return (
     <ProtectedRoute>
@@ -71,7 +92,9 @@ function ProfileContent() {
               style={{
                 width: "70px",
                 height: "70px",
-                background: "linear-gradient(135deg, #C9A84C, #9A7A2E)",
+                background: displayPhoto
+                  ? "#0A0A0A"
+                  : "linear-gradient(135deg, #C9A84C, #9A7A2E)",
                 borderRadius: "50%",
                 margin: "0 auto 1rem",
                 display: "flex",
@@ -81,9 +104,18 @@ function ProfileContent() {
                 fontFamily: "Cinzel, serif",
                 fontWeight: 700,
                 color: "#0A0A0A",
+                overflow: "hidden",
               }}
             >
-              {initials || "CU"}
+              {displayPhoto ? (
+                <img
+                  src={displayPhoto}
+                  alt={displayName}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                initials || "CU"
+              )}
             </div>
             <h3
               style={{
@@ -95,6 +127,9 @@ function ProfileContent() {
               {displayName}
             </h3>
             <p style={{ color: "#666", fontSize: "0.8rem" }}>{displayEmail}</p>
+            <p style={{ color: "#C9A84C", fontSize: "0.72rem", marginTop: "0.4rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              {displayRole}
+            </p>
             <div
               style={{
                 display: "flex",
@@ -264,17 +299,33 @@ function ProfileContent() {
                   <p style={{ color: "#666" }}>Your wishlist is empty</p>
                 </div>
               ) : (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, 1fr)",
-                    gap: "1.25rem",
-                  }}
-                >
-                  {wishlistProducts.map((p) => (
-                    <ProductCard key={p.id} product={p} />
-                  ))}
-                </div>
+                <>
+                  {productsLoading ? (
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: "4rem",
+                        background: "#161616",
+                        border: "1px solid #2A2A2A",
+                        color: "#C9A84C",
+                      }}
+                    >
+                      Loading wishlist products...
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(2, 1fr)",
+                        gap: "1.25rem",
+                      }}
+                    >
+                      {wishlistProducts.map((p) => (
+                        <ProductCard key={p.id} product={p} />
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
