@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { FirebaseError } from "firebase/app";
 import { useAuth } from "@/lib/auth";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading, login, continueWithGoogle, isConfigured } = useAuth();
@@ -146,5 +146,19 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#C9A84C" }}>
+          Loading sign in...
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }
