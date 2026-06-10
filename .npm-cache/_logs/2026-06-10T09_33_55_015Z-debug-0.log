@@ -1,0 +1,43 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.11.0
+2 info using node@v24.14.1
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\Admin\OneDrive\Desktop\devangorganics-main\.npmrc
+5 silly config load:file:C:\Users\Admin\.npmrc
+6 silly config load:file:C:\Users\Admin\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install firebase
+8 verbose argv "install" "firebase" "--no-audit" "--no-fund"
+9 verbose logfile logs-max:10 dir:C:\Users\Admin\OneDrive\Desktop\devangorganics-main\.npm-cache\_logs\2026-06-10T09_33_55_015Z-
+10 verbose logfile C:\Users\Admin\OneDrive\Desktop\devangorganics-main\.npm-cache\_logs\2026-06-10T09_33_55_015Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly idealTree buildDeps
+14 silly fetch manifest firebase@*
+15 silly packumentCache full:https://registry.npmjs.org/firebase cache-miss
+16 http fetch GET https://registry.npmjs.org/firebase attempt 1 failed with UNABLE_TO_VERIFY_LEAF_SIGNATURE
+17 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with UNABLE_TO_VERIFY_LEAF_SIGNATURE
+18 http fetch GET https://registry.npmjs.org/firebase attempt 2 failed with UNABLE_TO_VERIFY_LEAF_SIGNATURE
+19 http fetch GET https://registry.npmjs.org/npm attempt 2 failed with UNABLE_TO_VERIFY_LEAF_SIGNATURE
+20 http fetch GET https://registry.npmjs.org/firebase attempt 3 failed with UNABLE_TO_VERIFY_LEAF_SIGNATURE
+21 silly placeDep ROOT firebase@ OK for: devang-organics@0.1.0 want: *
+22 http fetch GET https://registry.npmjs.org/npm attempt 3 failed with UNABLE_TO_VERIFY_LEAF_SIGNATURE
+23 verbose type system
+24 verbose stack FetchError: request to https://registry.npmjs.org/firebase failed, reason: unable to verify the first certificate; if the root CA is installed locally, try running Node.js with --use-system-ca
+24 verbose stack     at ClientRequest.<anonymous> (C:\Program Files\nodejs\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+24 verbose stack     at ClientRequest.emit (node:events:508:28)
+24 verbose stack     at emitErrorEvent (node:_http_client:108:11)
+24 verbose stack     at _destroy (node:_http_client:963:9)
+24 verbose stack     at onSocketNT (node:_http_client:983:5)
+24 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+25 error code UNABLE_TO_VERIFY_LEAF_SIGNATURE
+26 error errno UNABLE_TO_VERIFY_LEAF_SIGNATURE
+27 error request to https://registry.npmjs.org/firebase failed, reason: unable to verify the first certificate; if the root CA is installed locally, try running Node.js with --use-system-ca
+28 silly unfinished npm timer reify 1781084036157
+29 silly unfinished npm timer reify:loadTrees 1781084036158
+30 verbose cwd C:\Users\Admin\OneDrive\Desktop\devangorganics-main
+31 verbose os Windows_NT 10.0.19045
+32 verbose node v24.14.1
+33 verbose npm  v11.11.0
+34 verbose exit 1
+35 verbose code 1
+36 error A complete log of this run can be found in: C:\Users\Admin\OneDrive\Desktop\devangorganics-main\.npm-cache\_logs\2026-06-10T09_33_55_015Z-debug-0.log
