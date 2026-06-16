@@ -44,8 +44,8 @@ export default function AdminRoute({
           <ShieldAlert className="mx-auto mb-4 text-[#C9A84C]" size={40} />
           <h1 className="font-[Cinzel] text-2xl text-[#F5F0E8] mb-3">Access Denied</h1>
           <p className="text-[#C8C0B0] text-sm leading-6">
-            This area is available only to users whose Firestore role is set to
-            admin.
+            This area is available only to users whose Firestore profile or
+            Firebase custom claims mark them as admin.
           </p>
         </div>
       </div>

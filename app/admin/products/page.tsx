@@ -14,7 +14,14 @@ import {
   X,
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { normalizeProductRecord, type Product, type RawProductRecord } from "@/lib/data";
+import StatCard from "@/components/ui/StatCard";
+import {
+  baseCategoryDefinitions,
+  normalizeProductRecord,
+  type Product,
+  type RawProductRecord,
+} from "@/lib/data";
+import { isFirebaseConfigured } from "@/lib/firebase";
 import { getProductImageCandidates } from "@/lib/product-images";
 import { useProducts } from "@/lib/products";
 
@@ -34,7 +41,7 @@ type ProductFormState = {
 const emptyForm: ProductFormState = {
   id: "",
   name: "",
-  categories: "Herb's",
+  categories: baseCategoryDefinitions[0]?.name || "",
   price: "",
   regular_price: "",
   image: "",
@@ -153,6 +160,8 @@ function toFormState(product: Product): ProductFormState {
 export default function AdminProducts() {
   const {
     products,
+    categories,
+    categoryDefinitions,
     loading,
     addProduct,
     updateProduct,
@@ -171,6 +180,10 @@ export default function AdminProducts() {
   const [errorMessage, setErrorMessage] = useState("");
   const imageCandidates = getProductImageCandidates(form.image, form.name || "Product");
   const previewImage = imageCandidates[0] || "";
+  const categoryOptions =
+    categoryDefinitions.length > 0 || !isFirebaseConfigured
+      ? categories.map((category) => category.name)
+      : [];
 
   const filteredProducts = products.filter((product) => {
     const query = search.toLowerCase();
@@ -193,6 +206,7 @@ export default function AdminProducts() {
     setEditingId(null);
     setForm({
       ...emptyForm,
+      categories: categoryOptions[0] || emptyForm.categories,
       id: String(
         products.reduce((max, product) => Math.max(max, product.id), 0) + 1
       ),
@@ -223,6 +237,11 @@ export default function AdminProducts() {
   const handleSave = async () => {
     if (!form.id || !form.name.trim()) {
       setErrorMessage("Product ID and product name are required.");
+      return;
+    }
+
+    if (!form.categories.trim()) {
+      setErrorMessage("Please create and select a category first.");
       return;
     }
 
@@ -368,15 +387,12 @@ export default function AdminProducts() {
             { label: "In Stock", value: products.filter((product) => product.inStock).length, icon: <Download size={18} className="text-[#C9A84C]" /> },
             { label: "JSON Ready", value: "Single or Array", icon: <FileJson size={18} className="text-[#C9A84C]" /> },
           ].map((card) => (
-            <div key={card.label} className="bg-[#161616] border border-[#1A1A1A] p-5 flex items-center justify-between">
-              <div>
-                <p className="text-[#666] text-xs tracking-[0.2em]">{card.label}</p>
-                <p className="font-[Cinzel] text-2xl text-[#C9A84C] mt-2">{card.value}</p>
-              </div>
-              <div className="w-10 h-10 border border-[rgba(201,168,76,0.25)] bg-[rgba(201,168,76,0.08)] flex items-center justify-center">
-                {card.icon}
-              </div>
-            </div>
+            <StatCard
+              key={card.label}
+              label={card.label}
+              value={card.value}
+              icon={card.icon}
+            />
           ))}
         </div>
 
@@ -558,6 +574,7 @@ export default function AdminProducts() {
                   <label className="block text-[#C8C0B0] text-xs mb-1.5">Category</label>
                   <select
                     value={form.categories}
+                    disabled={categoryOptions.length === 0}
                     onChange={(event) =>
                       setForm((current) => ({
                         ...current,
@@ -566,12 +583,17 @@ export default function AdminProducts() {
                     }
                     className="w-full px-3.5 py-2.5 bg-[#0A0A0A] border border-[#2A2A2A] text-[#F5F0E8] text-sm focus:border-[#C9A84C] focus:outline-none"
                   >
-                    {["Herb's", "Herb Tea", "Natural Soaps", "Pickles"].map((category) => (
+                    {categoryOptions.map((category) => (
                       <option key={category} value={category}>
                         {category}
                       </option>
                     ))}
                   </select>
+                  {categoryOptions.length === 0 ? (
+                    <p className="text-[#666] text-xs mt-2">
+                      Create at least one category in the Categories admin page first.
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="flex items-end">

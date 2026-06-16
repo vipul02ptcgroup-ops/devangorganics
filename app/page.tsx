@@ -1,83 +1,29 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, Leaf, Shield, Truck, Award, Star, ChevronRight, Coffee, Sparkles, Utensils } from "lucide-react";
+import { Leaf, Shield, Truck, Award, Star, ChevronRight } from "lucide-react";
 import ProductCard from "@/components/products/ProductCard";
 import { testimonials } from "@/lib/data";
 import { useProducts } from "@/lib/products";
 
 export default function HomePage() {
-  const { products, categories, loading } = useProducts();
-  const featured = products.slice(0, 4);
-  const bestsellers = products.filter(p => p.badge === "Bestseller" || p.reviews > 100).slice(0, 4);
+  const { publicProducts, publicCategories, loading } = useProducts();
+  const featured = publicProducts.slice(0, 4);
+  const bestsellers = publicProducts.filter(p => p.badge === "Bestseller" || p.reviews > 100).slice(0, 4);
+  const heroSectionStyle = {
+    position: "relative" as const,
+    overflow: "hidden",
+    width: "100%",
+  };
 
   return (
     <div>
       {/* Hero */}
-      <section style={{ minHeight: "90vh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #0A0A0A 0%, #111111 50%, #0D0D0D 100%)" }}>
-        {/* Decorative */}
-        {/* <div style={{ position: "absolute", top: "10%", right: "5%", width: "500px", height: "500px", borderRadius: "50%", background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "10%", left: "3%", width: "300px", height: "300px", borderRadius: "50%", background: "radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 70%)", pointerEvents: "none" }} /> */}
-        
-        <div style={{ padding: "0 5%", width: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center" }} className="hero-grid">
-          <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid #C9A84C33", padding: "6px 16px", marginBottom: "1.5rem" }}>
-              <Leaf size={14} style={{ color: "#C9A84C" }} />
-              <span style={{ color: "#C9A84C", fontSize: "0.75rem", fontFamily: "Raleway, sans-serif", letterSpacing: "0.15em" }}>100% CERTIFIED ORGANIC</span>
-            </div>
-            <h1 style={{ fontFamily: "Cinzel, serif", fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, lineHeight: 1.1, marginBottom: "1.5rem" }}>
-              <span style={{ background: "linear-gradient(135deg, #C9A84C 0%, #E8C96A 50%, #9A7A2E 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Nature's Finest</span>
-              <br />
-              <span style={{ color: "#F5F0E8" }}>Delivered to</span>
-              <br />
-              <span style={{ color: "#F5F0E8" }}>Your Door</span>
-            </h1>
-            <p style={{ color: "#C8C0B0", fontSize: "1.05rem", lineHeight: 1.8, marginBottom: "2.5rem", maxWidth: "480px", fontFamily: "Cormorant Garamond, serif", fontStyle: "italic" }}>
-              Rooted in Ayurveda, crafted with love. Premium organic teas, herbs, soaps, and pickles with no artificial preservatives.
-            </p>
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-              <Link href="/products" style={{ background: "linear-gradient(135deg, #C9A84C 0%, #E8C96A 50%, #9A7A2E 100%)", color: "#0A0A0A", padding: "14px 32px", textDecoration: "none", fontFamily: "Cinzel, serif", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.1em", display: "flex", alignItems: "center", gap: "8px" }}>
-                SHOP NOW <ArrowRight size={16} />
-              </Link>
-              <Link href="/about" style={{ background: "transparent", border: "1px solid #C9A84C", color: "#C9A84C", padding: "14px 32px", textDecoration: "none", fontFamily: "Cinzel, serif", fontWeight: 600, fontSize: "0.85rem", letterSpacing: "0.1em" }}>
-                OUR STORY
-              </Link>
-            </div>
-            <div style={{ display: "flex", gap: "2rem", marginTop: "3rem", paddingTop: "2rem", borderTop: "1px solid #2A2A2A" }}>
-              {[["500+", "Products"], ["50K+", "Customers"], ["100%", "Organic"], ["4.9", "Rating"]].map(([num, label]) => (
-                <div key={label}>
-                  <div style={{ fontFamily: "Cinzel, serif", fontSize: "1.5rem", color: "#C9A84C", fontWeight: 700 }}>{num}</div>
-                  <div style={{ color: "#666", fontSize: "0.75rem", letterSpacing: "0.08em" }}>{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Hero visual */}
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
-            <div style={{ width: "380px", height: "380px", borderRadius: "50%", border: "1px solid #C9A84C33", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-              <div style={{ width: "300px", height: "300px", borderRadius: "50%", border: "1px solid #C9A84C22", background: "radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Leaf size={96} style={{ color: "#C9A84C", opacity: 0.6 }} />
-              </div>
-              {/* Floating badges */}
-              {[
-                { icon: <Coffee size={28} style={{ color: "#C9A84C" }} />, label: "Herb Tea", angle: -45, r: 190 },
-                { icon: <Sparkles size={28} style={{ color: "#C9A84C" }} />, label: "Natural Soap", angle: 45, r: 190 },
-                { icon: <Utensils size={28} style={{ color: "#C9A84C" }} />, label: "Pickles", angle: 135, r: 190 },
-                { icon: <Leaf size={28} style={{ color: "#C9A84C" }} />, label: "Herbs", angle: -135, r: 190 },
-              ].map(({ icon, label, angle, r }) => {
-                const x = Math.cos((angle * Math.PI) / 180) * r;
-                const y = Math.sin((angle * Math.PI) / 180) * r;
-                return (
-                  <div key={label} style={{ position: "absolute", left: `calc(50% + ${x}px - 35px)`, top: `calc(50% + ${y}px - 35px)`, width: "70px", height: "70px", background: "#161616", border: "1px solid #2A2A2A", borderRadius: "50%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                    {icon}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <style>{`@media(max-width:900px){.hero-grid{grid-template-columns:1fr!important;text-align:center}}`}</style>
+      <section style={heroSectionStyle} aria-label="Hero banner image" className="hero-section">
+        <img
+          src="/Images/herobanner.png"
+          alt="Devang Organics hero banner"
+          style={{ width: "100%", height: "auto", display: "block" }}
+        />
       </section>
 
       {/* Features */}
@@ -111,7 +57,7 @@ export default function HomePage() {
           <div style={{ height: "1px", width: "80px", background: "linear-gradient(90deg, transparent, #C9A84C, transparent)", margin: "0 auto" }} />
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem" }} className="cat-grid content-center">
-          {categories.map(cat => (
+          {publicCategories.map(cat => (
             <Link key={cat.id} href={`/products?category=${cat.slug}`} style={{ textDecoration: "none" }}>
               <div style={{ background: "#161616", border: "1px solid #2A2A2A", padding: "1.5rem 1rem", textAlign: "center", transition: "all 0.3s", cursor: "pointer" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#C9A84C"; (e.currentTarget as HTMLElement).style.background = "#1A1A1A"; }}

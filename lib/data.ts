@@ -3,6 +3,7 @@ export interface Product {
   name: string;
   category: string;
   categories: string;
+  shortDescription?: string;
   price: number | null;
   regular_price: number | null;
   originalPrice: number | null;
@@ -11,6 +12,7 @@ export interface Product {
   reviews: number;
   description: string;
   inStock: boolean;
+  stock?: number | null;
   image: string;
   weight: string;
   color: string;
@@ -23,6 +25,12 @@ export interface Category {
   slug: string;
   iconName: string;
   count: number;
+}
+
+export interface CategoryDefinition {
+  name: string;
+  slug: string;
+  iconName: string;
 }
 
 export interface RawProductRecord {
@@ -598,12 +606,12 @@ const badges = [
   "Premium",
 ];
 
-const categoryMap: Record<string, { slug: string; label: string; iconName: string }> = {
-  "Herb's": { slug: "herbs", label: "Herb's", iconName: "Leaf" },
-  "Herb Tea": { slug: "herb-tea", label: "Herb Tea", iconName: "Coffee" },
-  "Natural Soaps": { slug: "natural-soaps", label: "Natural Soaps", iconName: "Sparkles" },
-  Pickles: { slug: "pickles", label: "Pickles", iconName: "Utensils" },
-};
+export const baseCategoryDefinitions: CategoryDefinition[] = [
+  { name: "Herb's", slug: "herbs", iconName: "Leaf" },
+  { name: "Herb Tea", slug: "herb-tea", iconName: "Coffee" },
+  { name: "Natural Soaps", slug: "natural-soaps", iconName: "Sparkles" },
+  { name: "Pickles", slug: "pickles", iconName: "Utensils" },
+];
 
 const weightByCategory: Record<string, string> = {
   "Herb's": "50g",
@@ -618,8 +626,17 @@ function toNumber(value: unknown) {
   return Number.isNaN(numeric) ? null : numeric;
 }
 
+export function slugifyCategoryName(input: string) {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function normalizeCategoryName(input?: string | null) {
-  if (!input) return "Herb's";
+  if (!input || !input.trim()) return "Others";
   const value = input.trim().toLowerCase();
   if (value === "herb's" || value === "herbs" || value === "natural herbs") {
     return "Herb's";
@@ -636,12 +653,55 @@ function normalizeCategoryName(input?: string | null) {
   return input.trim();
 }
 
+function guessCategoryIconName(input: string) {
+  const value = input.trim().toLowerCase();
+
+  if (value.includes("tea") || value.includes("coffee")) {
+    return "Coffee";
+  }
+
+  if (value.includes("soap")) {
+    return "Sparkles";
+  }
+
+  if (value.includes("pickle")) {
+    return "Utensils";
+  }
+
+  return "Leaf";
+}
+
+export function resolveCategoryDefinition(
+  input?: string | null,
+  definitions: CategoryDefinition[] = baseCategoryDefinitions
+): CategoryDefinition {
+  const normalizedName = normalizeCategoryName(input);
+  const normalizedSlug = slugifyCategoryName(normalizedName);
+  const matchedDefinition = definitions.find((definition) => {
+    const definitionName = normalizeCategoryName(definition.name);
+    return (
+      definitionName.toLowerCase() === normalizedName.toLowerCase() ||
+      definition.slug === normalizedSlug
+    );
+  });
+
+  if (matchedDefinition) {
+    return matchedDefinition;
+  }
+
+  return {
+    name: normalizedName,
+    slug: normalizedSlug || "uncategorized",
+    iconName: guessCategoryIconName(normalizedName),
+  };
+}
+
 export function normalizeProductRecord(
   record: RawProductRecord,
-  index = 0
+  index = 0,
+  categoryDefinitions: CategoryDefinition[] = baseCategoryDefinitions
 ): Product {
-  const categoryLabel = normalizeCategoryName(record.categories);
-  const category = categoryMap[categoryLabel] ?? categoryMap["Herb's"];
+  const category = resolveCategoryDefinition(record.categories, categoryDefinitions);
   const regularPrice = toNumber(record.regular_price);
   const price = toNumber(record.price);
 
@@ -649,7 +709,8 @@ export function normalizeProductRecord(
     id: Number(record.id),
     name: stripHtml(record.name || "Untitled Product"),
     category: category.slug,
-    categories: category.label,
+    categories: category.name,
+    shortDescription: stripHtml(record.short_description || ""),
     price,
     regular_price: regularPrice,
     originalPrice: regularPrice,
@@ -658,8 +719,9 @@ export function normalizeProductRecord(
     reviews: 15 + ((index * 23) % 250),
     description: stripHtml(record.description || record.short_description || ""),
     inStock: record.in_stock ?? true,
+    stock: toNumber(record.stock),
     image: (record.image || "").replace(/^\/+/, ""),
-    weight: weightByCategory[category.label] || "50g",
+    weight: weightByCategory[category.name] || "50g",
     color: "Natural",
     attributes: record.attributes
       ? Object.fromEntries(
@@ -679,32 +741,68 @@ export function serializeProductToRawRecord(product: Product): RawProductRecord 
     sku: null,
     categories: product.categories,
     tags: null,
-    short_description: product.description,
+    short_description: product.shortDescription || product.description,
     description: product.description,
     regular_price: product.regular_price,
     price: product.price,
     in_stock: product.inStock,
-    stock: null,
+    stock: product.stock ?? null,
     image: product.image,
     attributes: product.attributes ?? null,
   };
 }
 
-export function buildCategories(productList: Product[]): Category[] {
-  return [
-    { id: 1, name: "Herb's", slug: "herbs", iconName: "Leaf", count: productList.filter((p) => p.category === "herbs").length },
-    { id: 2, name: "Herb Tea", slug: "herb-tea", iconName: "Coffee", count: productList.filter((p) => p.category === "herb-tea").length },
-    { id: 3, name: "Natural Soaps", slug: "natural-soaps", iconName: "Sparkles", count: productList.filter((p) => p.category === "natural-soaps").length },
-    { id: 4, name: "Pickles", slug: "pickles", iconName: "Utensils", count: productList.filter((p) => p.category === "pickles").length },
-  ];
+export function buildCategories(
+  productList: Product[],
+  definitions: CategoryDefinition[] = baseCategoryDefinitions,
+  options?: {
+    includeProductOnlyCategories?: boolean;
+  }
+): Category[] {
+  const includeProductOnlyCategories =
+    options?.includeProductOnlyCategories ?? true;
+  const counts = new Map<string, number>();
+
+  productList.forEach((product) => {
+    counts.set(product.category, (counts.get(product.category) ?? 0) + 1);
+  });
+
+  const categoryDefinitions = [...definitions];
+
+  if (includeProductOnlyCategories) {
+    productList.forEach((product) => {
+      const exists = categoryDefinitions.some(
+        (definition) => definition.slug === product.category
+      );
+
+      if (!exists) {
+        categoryDefinitions.push({
+          name: product.categories,
+          slug: product.category,
+          iconName: guessCategoryIconName(product.categories),
+        });
+      }
+    });
+  }
+
+  return categoryDefinitions.map((definition, index) => ({
+    id: index + 1,
+    name: definition.name,
+    slug: definition.slug,
+    iconName: definition.iconName,
+    count: counts.get(definition.slug) ?? 0,
+  }));
 }
 
 export const baseProducts: Product[] = defaultRawProducts.map((product, index) =>
-  normalizeProductRecord(product, index)
+  normalizeProductRecord(product, index, baseCategoryDefinitions)
 );
 
 export const products = baseProducts;
-export const categories: Category[] = buildCategories(baseProducts);
+export const categories: Category[] = buildCategories(
+  baseProducts,
+  baseCategoryDefinitions
+);
 
 export const testimonials = [
   { id: 1, name: "Priya Sharma", location: "Mumbai", text: "Devang Organics has transformed my daily routine. The herbs are absolutely pure and effective. I feel more energetic than ever!", rating: 5, avatar: "PS" },

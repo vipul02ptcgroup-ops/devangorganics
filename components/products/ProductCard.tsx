@@ -1,29 +1,45 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { Heart, ShoppingCart, Star, Eye, Package, Leaf, Coffee, Sparkles, Utensils } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Heart,
+  ShoppingCart,
+  Star,
+  Package,
+  Leaf,
+  Coffee,
+  Sparkles,
+  Utensils,
+} from "lucide-react";
 import { useStore } from "@/lib/store";
+import { useAuth } from "@/lib/auth";
 import { Product } from "@/lib/data";
 import { getProductImageCandidates } from "@/lib/product-images";
 
 const categoryIcons: Record<string, React.ReactNode> = {
-  "herbs":       <Leaf size={40} className="text-emerald-400 opacity-70" />,
-  "herb-tea":    <Coffee size={40} className="text-amber-400 opacity-70" />,
+  herbs: <Leaf size={40} className="text-emerald-400 opacity-70" />,
+  "herb-tea": <Coffee size={40} className="text-amber-400 opacity-70" />,
   "natural-soaps": <Sparkles size={40} className="text-rose-300 opacity-70" />,
-  "pickles":     <Utensils size={40} className="text-orange-400 opacity-70" />,
+  pickles: <Utensils size={40} className="text-orange-400 opacity-70" />,
 };
 
 const categoryBg: Record<string, string> = {
-  "herbs":         "from-emerald-900/40 to-emerald-800/20",
-  "herb-tea":      "from-amber-900/40 to-amber-800/20",
+  herbs: "from-emerald-900/40 to-emerald-800/20",
+  "herb-tea": "from-amber-900/40 to-amber-800/20",
   "natural-soaps": "from-rose-900/40 to-rose-800/20",
-  "pickles":       "from-orange-900/40 to-orange-800/20",
+  pickles: "from-orange-900/40 to-orange-800/20",
 };
 
 export default function ProductCard({ product }: { product: Product }) {
+  const router = useRouter();
+  const { user } = useAuth();
   const { addToCart, toggleWishlist, wishlist } = useStore();
   const isWishlisted = wishlist.includes(product.id);
-  const icon = categoryIcons[product.category] ?? <Package size={40} className="text-stone-400 opacity-70" />;
+  const icon =
+    categoryIcons[product.category] ?? (
+      <Package size={40} className="text-stone-400 opacity-70" />
+    );
   const bg = categoryBg[product.category] ?? "from-stone-900/40 to-stone-800/20";
   const imageCandidates = useMemo(
     () => getProductImageCandidates(product.image || "", product.name),
@@ -36,118 +52,134 @@ export default function ProductCard({ product }: { product: Product }) {
   }, [product.id, product.image, product.name]);
 
   const activeImage = imageCandidates[imageIndex];
+  const productHref = `/products/${product.id}`;
 
   return (
-    <div className="group relative bg-[#161616] border border-[#2A2A2A] hover:border-[#C9A84C] hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(201,168,76,0.12)] transition-all duration-300 overflow-hidden flex flex-col">
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => router.push(productHref)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          router.push(productHref);
+        }
+      }}
+      className="group relative bg-[#161616] border border-[#2A2A2A] hover:border-[#C9A84C] hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(201,168,76,0.12)] transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
+    >
+      <div
+        className={`relative h-52 bg-gradient-to-br ${bg} flex items-center justify-center overflow-hidden`}
+      >
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, #C9A84C 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }}
+        />
 
-      {/* Image / Icon area */}
-      <div className={`relative h-52 bg-gradient-to-br ${bg} flex items-center justify-center overflow-hidden`}>
-
-        {/* Faint grid pattern */}
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "radial-gradient(circle, #C9A84C 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
-
-        {/* Product image or fallback icon */}
         {activeImage ? (
           <img
             src={activeImage}
             alt={product.name}
             className="h-40 w-full object-contain px-4 relative z-10 group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
+            onError={(event) => {
               if (imageIndex < imageCandidates.length - 1) {
                 setImageIndex((current) => current + 1);
                 return;
               }
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-              (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
+              (event.currentTarget as HTMLImageElement).style.display = "none";
+              (event.currentTarget.nextSibling as HTMLElement).style.display = "flex";
             }}
           />
         ) : null}
-        <div className="hidden absolute inset-0 items-center justify-center">
-          {icon}
-        </div>
+        <div className="hidden absolute inset-0 items-center justify-center">{icon}</div>
 
-        {/* Badge */}
-        {product.badge && (
+        {product.badge ? (
           <span className="absolute top-3 left-3 bg-gradient-to-r from-[#C9A84C] to-[#9A7A2E] text-[#0A0A0A] font-bold text-[0.6rem] px-2.5 py-1 tracking-widest uppercase z-20">
             {product.badge}
           </span>
-        )}
+        ) : null}
 
-        {/* Out of stock overlay */}
-        {!product.inStock && (
+        {!product.inStock ? (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
-            <span className="text-[#C8C0B0] text-xs tracking-widest border border-[#666] px-4 py-1.5 uppercase">Out of Stock</span>
+            <span className="text-[#C8C0B0] text-xs tracking-widest border border-[#666] px-4 py-1.5 uppercase">
+              Out of Stock
+            </span>
           </div>
-        )}
+        ) : null}
 
-        {/* Action buttons — wishlist + quick view */}
         <div className="absolute right-2.5 bottom-2.5 flex flex-col gap-1.5 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
-            onClick={() => toggleWishlist(product.id)}
-            className={`w-8 h-8 flex items-center justify-center border transition-all duration-200 cursor-pointer
-              ${isWishlisted
+            onClick={(event) => {
+              event.stopPropagation();
+
+              if (!user) {
+                router.push(
+                  `/login?next=${encodeURIComponent("/profile?tab=wishlist")}`
+                );
+                return;
+              }
+
+              void toggleWishlist({
+                productId: product.id,
+                productName: product.name,
+                productImage: product.image,
+              });
+            }}
+            className={`w-8 h-8 flex items-center justify-center border transition-all duration-200 cursor-pointer ${
+              isWishlisted
                 ? "bg-[#C9A84C] border-[#C9A84C] text-[#0A0A0A]"
-                : "bg-black/80 border-[#2A2A2A] text-[#C8C0B0] hover:border-[#C9A84C] hover:text-[#C9A84C]"}`}
+                : "bg-black/80 border-[#2A2A2A] text-[#C8C0B0] hover:border-[#C9A84C] hover:text-[#C9A84C]"
+            }`}
             aria-label="Toggle wishlist"
           >
             <Heart size={13} fill={isWishlisted ? "currentColor" : "none"} />
           </button>
-          <Link
-            href={`/products/${product.id}`}
-            className="w-8 h-8 flex items-center justify-center bg-black/80 border border-[#2A2A2A] text-[#C8C0B0] hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all duration-200"
-            aria-label="Quick view"
-          >
-            <Eye size={13} />
-          </Link>
         </div>
       </div>
 
-      {/* Product info */}
       <div className="flex flex-col flex-1 p-5 gap-2">
-
-        {/* Category label */}
         <p className="text-[#666] text-[0.65rem] uppercase tracking-widest font-medium flex items-center gap-1">
           <span className="inline-flex scale-75">{icon}</span>
           {product.categories}
         </p>
 
-        {/* Name */}
-        <Link href={`/products/${product.id}`}>
-          <h3 className="text-[#F5F0E8] text-[0.9rem] leading-snug font-semibold hover:text-[#C9A84C] transition-colors duration-200 line-clamp-2">
-            {product.name}
-          </h3>
-        </Link>
+        <h3 className="text-[#F5F0E8] text-[0.9rem] leading-snug font-semibold hover:text-[#C9A84C] transition-colors duration-200 line-clamp-2">
+          {product.name}
+        </h3>
 
-        {/* Description */}
         <p className="text-[#777] text-[0.75rem] leading-relaxed line-clamp-2 flex-1">
           {product.description}
         </p>
 
-        {/* Rating */}
         <div className="flex items-center gap-1.5">
           <div className="flex gap-0.5">
-            {[...Array(5)].map((_, i) => (
+            {[...Array(5)].map((_, index) => (
               <Star
-                key={i}
+                key={index}
                 size={11}
                 className="text-[#C9A84C]"
-                fill={i < Math.floor(product.rating) ? "#C9A84C" : "none"}
+                fill={index < Math.floor(product.rating) ? "#C9A84C" : "none"}
               />
             ))}
           </div>
           <span className="text-[#555] text-[0.7rem]">({product.reviews})</span>
         </div>
 
-        {/* Price area */}
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-2">
             {product.price ? (
               <>
-                <span className="text-[#C9A84C] font-bold text-[1.05rem]">₹{product.price}</span>
-                {product.originalPrice && (
-                  <span className="text-[#555] text-sm line-through">₹{product.originalPrice}</span>
-                )}
+                <span className="text-[#C9A84C] font-bold text-[1.05rem]">
+                  Rs{product.price}
+                </span>
+                {product.originalPrice ? (
+                  <span className="text-[#555] text-sm line-through">
+                    Rs{product.originalPrice}
+                  </span>
+                ) : null}
               </>
             ) : (
               <span className="text-[#C9A84C] text-sm font-semibold tracking-wide flex items-center gap-1.5">
@@ -161,20 +193,29 @@ export default function ProductCard({ product }: { product: Product }) {
           </span>
         </div>
 
-        {/* Add to cart button */}
         <button
-          onClick={() => product.inStock && addToCart({
-            id: product.id,
-            name: product.name,
-            price: product.price || 0,
-            weight: "",
-            color: "#C9A84C",
-          })}
+          onClick={(event) => {
+            event.stopPropagation();
+
+            if (!product.inStock) {
+              return;
+            }
+
+            addToCart({
+              id: product.id,
+              name: product.name,
+              price: product.price || 0,
+              weight: "",
+              color: "#C9A84C",
+              image: product.image,
+            });
+          }}
           disabled={!product.inStock}
-          className={`mt-2 w-full py-2.5 flex items-center justify-center gap-2 text-[0.72rem] font-bold tracking-widest uppercase transition-all duration-200 cursor-pointer
-            ${product.inStock
+          className={`mt-2 w-full py-2.5 flex items-center justify-center gap-2 text-[0.72rem] font-bold tracking-widest uppercase transition-all duration-200 cursor-pointer ${
+            product.inStock
               ? "bg-gradient-to-r from-[#C9A84C] via-[#E8C96A] to-[#9A7A2E] text-[#0A0A0A] hover:opacity-90 hover:shadow-[0_4px_20px_rgba(201,168,76,0.3)]"
-              : "bg-[#1A1A1A] text-[#444] border border-[#2A2A2A] cursor-not-allowed"}`}
+              : "bg-[#1A1A1A] text-[#444] border border-[#2A2A2A] cursor-not-allowed"
+          }`}
         >
           <ShoppingCart size={13} />
           {product.inStock ? "Add to Cart" : "Out of Stock"}

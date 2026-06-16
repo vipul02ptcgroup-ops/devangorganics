@@ -8,16 +8,12 @@ import { useStore } from "@/lib/store";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "All Products", href: "/products" },
-  { label: "Organic Tea", href: "/products?category=herb-tea" },
-  { label: "Natural Herb's", href: "/products?category=herbs" },
-  { label: "Natural Soap's", href: "/products?category=natural-soaps" },
-  { label: "Pickle's", href: "/products?category=pickles" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
 
 export default function Header() {
-  const { cartCount, setCartOpen } = useStore();
+  const { cartCount, wishlist, setCartOpen } = useStore();
   const { user, userProfile, isAdmin, loading, roleLoading } = useUserRole();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -102,8 +98,20 @@ export default function Header() {
           </Link>
 
           {/* Wishlist */}
-          <Link href={user ? "/profile?tab=wishlist" : "/login"} className="text-[#C8C0B0] hover:text-[#C9A84C] transition">
+          <Link
+            href={
+              user
+                ? "/profile?tab=wishlist"
+                : "/login?next=%2Fprofile%3Ftab%3Dwishlist"
+            }
+            className="relative text-[#C8C0B0] hover:text-[#C9A84C] transition"
+          >
             <Heart size={20} />
+            {wishlist.length > 0 ? (
+              <span className="absolute -top-2 -right-2 bg-gradient-to-br from-[#C9A84C] to-[#E8C96A] text-black rounded-full min-w-[18px] h-[18px] px-1 text-[0.65rem] flex items-center justify-center font-bold">
+                {wishlist.length}
+              </span>
+            ) : null}
           </Link>
 
           {/* Cart */}

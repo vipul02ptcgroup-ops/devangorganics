@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  serverTimestamp,
   collection,
   deleteDoc,
   doc,
@@ -17,7 +18,9 @@ import {
 } from "firebase/firestore";
 import {
   baseProducts,
+  baseCategoryDefinitions,
   buildCategories,
+  type CategoryDefinition,
   normalizeProductRecord,
   serializeProductToRawRecord,
   type Category,
@@ -29,12 +32,21 @@ import { ensureProductImageInStorage } from "@/lib/product-storage";
 
 type ProductContextValue = {
   products: Product[];
+  publicProducts: Product[];
   categories: Category[];
+  publicCategories: Category[];
+  categoryDefinitions: CategoryDefinition[];
   loading: boolean;
   addProduct: (product: Product) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
   importProducts: (records: RawProductRecord[]) => Promise<number>;
+  addCategory: (category: CategoryDefinition) => Promise<void>;
+  updateCategory: (
+    previousSlug: string,
+    category: CategoryDefinition
+  ) => Promise<void>;
+  deleteCategory: (slug: string) => Promise<void>;
 };
 
 const ProductContext = createContext<ProductContextValue | null>(null);
@@ -44,48 +56,168 @@ function sortProducts(items: Product[]) {
 }
 
 export function ProductProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(
-    isFirebaseConfigured ? [] : baseProducts
+  const [rawProducts, setRawProducts] = useState<RawProductRecord[]>(
+    isFirebaseConfigured
+      ? []
+      : baseProducts.map((product) => serializeProductToRawRecord(product))
   );
+  const [categoryDefinitions, setCategoryDefinitions] = useState<
+    CategoryDefinition[]
+  >(isFirebaseConfigured ? [] : baseCategoryDefinitions);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!db || !isFirebaseConfigured) {
-      setProducts(baseProducts);
+      setRawProducts(baseProducts.map((product) => serializeProductToRawRecord(product)));
+      setCategoryDefinitions(baseCategoryDefinitions);
       setLoading(false);
       return;
     }
 
-    const unsubscribe = onSnapshot(
+    let pendingSnapshots = 2;
+    const finishSnapshot = () => {
+      pendingSnapshots -= 1;
+      if (pendingSnapshots <= 0) {
+        setLoading(false);
+      }
+    };
+
+    const unsubscribeProducts = onSnapshot(
       collection(db, "products"),
       (snapshot) => {
         if (snapshot.empty) {
-          setProducts([]);
-          setLoading(false);
+          setRawProducts([]);
+          finishSnapshot();
           return;
         }
 
-        const firestoreProducts = snapshot.docs.map((entry, index) =>
-          normalizeProductRecord(entry.data() as RawProductRecord, index)
+        const firestoreProducts = snapshot.docs.map(
+          (entry) => entry.data() as RawProductRecord
         );
-        setProducts(sortProducts(firestoreProducts));
-        setLoading(false);
+        setRawProducts(firestoreProducts);
+        finishSnapshot();
       },
       (error) => {
         console.error("Failed to load Firestore products", error);
-        setProducts([]);
-        setLoading(false);
+        setRawProducts([]);
+        finishSnapshot();
       }
     );
 
-    return unsubscribe;
+    const unsubscribeCategories = onSnapshot(
+      collection(db, "categories"),
+      (snapshot) => {
+        if (snapshot.empty) {
+          setCategoryDefinitions([]);
+          finishSnapshot();
+          return;
+        }
+
+        const firestoreCategories = snapshot.docs.map((entry) => {
+          const data = entry.data() as Partial<CategoryDefinition>;
+
+          return {
+            name: data.name || entry.id,
+            slug: data.slug || entry.id,
+            iconName: data.iconName || "Leaf",
+          } satisfies CategoryDefinition;
+        });
+
+        setCategoryDefinitions(
+          [...firestoreCategories].sort((a, b) => a.name.localeCompare(b.name))
+        );
+        finishSnapshot();
+      },
+      (error) => {
+        console.error("Failed to load Firestore categories", error);
+        setCategoryDefinitions([]);
+        finishSnapshot();
+      }
+    );
+
+    return () => {
+      unsubscribeProducts();
+      unsubscribeCategories();
+    };
   }, []);
 
-  const categories = useMemo(() => buildCategories(products), [products]);
+  const products = useMemo(() => {
+    const definitionsToUse =
+      categoryDefinitions.length > 0
+        ? categoryDefinitions
+        : baseCategoryDefinitions;
+
+    return sortProducts(
+      rawProducts.map((product, index) =>
+        normalizeProductRecord(product, index, definitionsToUse)
+      )
+    );
+  }, [categoryDefinitions, rawProducts]);
+
+  const categories = useMemo(() => {
+    if (isFirebaseConfigured && categoryDefinitions.length === 0) {
+      return [];
+    }
+
+    const definitionsToUse =
+      categoryDefinitions.length > 0
+        ? categoryDefinitions
+        : baseCategoryDefinitions;
+
+    return buildCategories(products, definitionsToUse, {
+      includeProductOnlyCategories: categoryDefinitions.length === 0,
+    });
+  }, [categoryDefinitions, products]);
+
+  const publicProducts = useMemo(() => {
+    if (categoryDefinitions.length === 0) {
+      return products;
+    }
+
+    const visibleCategorySlugs = new Set(
+      categoryDefinitions.map((category) => category.slug)
+    );
+
+    return products.map((product) =>
+      visibleCategorySlugs.has(product.category)
+        ? product
+        : {
+            ...product,
+            category: "others",
+            categories: "Others",
+          }
+    );
+  }, [categoryDefinitions, products]);
+
+  const publicCategories = useMemo(() => {
+    if (categoryDefinitions.length === 0) {
+      return categories;
+    }
+
+    const definitions = [...categoryDefinitions];
+    const hasOtherProducts = publicProducts.some(
+      (product) => product.category === "others"
+    );
+
+    if (hasOtherProducts) {
+      definitions.push({
+        name: "Others",
+        slug: "others",
+        iconName: "Package",
+      });
+    }
+
+    return buildCategories(publicProducts, definitions, {
+      includeProductOnlyCategories: false,
+    });
+  }, [categories, categoryDefinitions, publicProducts]);
 
   const value: ProductContextValue = {
     products,
+    publicProducts,
     categories,
+    publicCategories,
+    categoryDefinitions,
     loading,
     async addProduct(product) {
       if (!db) {
@@ -128,7 +260,13 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       const normalized = await Promise.all(
         records.map(async (record, index) =>
           ensureProductImageInStorage(
-            normalizeProductRecord(record, products.length + index)
+            normalizeProductRecord(
+              record,
+              products.length + index,
+              categoryDefinitions.length > 0
+                ? categoryDefinitions
+                : baseCategoryDefinitions
+            )
           )
         )
       );
@@ -143,6 +281,37 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       );
 
       return normalized.length;
+    },
+    async addCategory(category) {
+      if (!db) {
+        throw new Error("Firebase is not configured.");
+      }
+
+      await setDoc(doc(db, "categories", category.slug), {
+        ...category,
+        updatedAt: serverTimestamp(),
+      });
+    },
+    async updateCategory(previousSlug, category) {
+      if (!db) {
+        throw new Error("Firebase is not configured.");
+      }
+
+      await setDoc(doc(db, "categories", category.slug), {
+        ...category,
+        updatedAt: serverTimestamp(),
+      });
+
+      if (previousSlug !== category.slug) {
+        await deleteDoc(doc(db, "categories", previousSlug));
+      }
+    },
+    async deleteCategory(slug) {
+      if (!db) {
+        throw new Error("Firebase is not configured.");
+      }
+
+      await deleteDoc(doc(db, "categories", slug));
     },
   };
 

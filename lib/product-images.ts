@@ -1,13 +1,3 @@
-const localExtensions = [".webp", ".png", ".jpg", ".jpeg", ".avif"];
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 function normalizeLocalPath(path: string) {
   return path.replace(/^\/+/, "");
 }
@@ -33,15 +23,9 @@ export function getProductImageCandidates(image: string, productName: string) {
     }
   }
 
-  const productSlug = slugify(productName);
-  const productNameRaw = productName.trim();
-
-  if (productSlug) {
-    for (const extension of localExtensions) {
-      candidates.add(`/assets/ProductsImage/${productSlug}${extension}`);
-      candidates.add(`/assets/ProductsImage/${productNameRaw}${extension}`);
-    }
-  }
-
   return Array.from(candidates).filter(Boolean);
+}
+
+export function resolveProductImageSrc(image: string, productName: string) {
+  return getProductImageCandidates(image, productName)[0] || "";
 }

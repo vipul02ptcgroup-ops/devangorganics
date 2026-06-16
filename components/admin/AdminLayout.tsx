@@ -4,9 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Heart,
   LayoutDashboard,
+  MessageSquare,
   Package,
   ShoppingBag,
+  Tags,
   Users,
   LogOut,
   Menu,
@@ -20,7 +23,10 @@ import { useAuth, useUserRole } from "@/lib/auth";
 const navItems = [
   { href: "/admin", label: "Dashboard", Icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", Icon: Package },
+  { href: "/admin/categories", label: "Categories", Icon: Tags },
   { href: "/admin/orders", label: "Orders", Icon: ShoppingBag },
+  { href: "/admin/reviews", label: "Reviews", Icon: MessageSquare },
+  { href: "/admin/wishlist", label: "Wishlist", Icon: Heart },
   { href: "/admin/users", label: "Users", Icon: Users },
 ];
 
@@ -51,17 +57,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         >
           <div className="flex items-center justify-between px-4 border-b border-[#1A1A1A] min-h-[64px] shrink-0">
             {sidebarOpen ? (
-              <div>
-                <span
-                  className="font-[Cinzel] text-base font-bold"
-                  style={{
-                    background: "linear-gradient(135deg, #C9A84C, #E8C96A)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  DEVANG
-                </span>
+              <div className="flex items-center gap-3">
+                <img
+                  src="/Images/Logo.png"
+                  alt="Devang Organics"
+                  className="h-10 w-auto object-contain"
+                />
                 <span className="block text-[#666] text-[0.65rem] tracking-[0.2em]">
                   ADMIN PANEL
                 </span>

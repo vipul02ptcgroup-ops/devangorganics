@@ -82,8 +82,11 @@ function RegisterContent() {
       <div style={{ width: "100%", maxWidth: "480px" }}>
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
           <Link href="/" style={{ textDecoration: "none" }}>
-            <span style={{ fontFamily: "Cinzel, serif", fontSize: "2rem", fontWeight: 700, background: "linear-gradient(135deg, #C9A84C, #E8C96A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>DEVANG</span>
-            <div style={{ fontFamily: "Raleway, sans-serif", fontSize: "0.65rem", letterSpacing: "0.4em", color: "#C9A84C" }}>ORGANICS</div>
+            <img
+              src="/Images/Logo.png"
+              alt="Devang Organics"
+              style={{ height: "88px", width: "auto", margin: "0 auto", objectFit: "contain" }}
+            />
           </Link>
           <h1 style={{ fontFamily: "Cinzel, serif", fontSize: "1.5rem", color: "#F5F0E8", marginTop: "1.5rem", marginBottom: "0.5rem" }}>Create Account</h1>
           <p style={{ color: "#666", fontSize: "0.875rem" }}>Join the Devang Organics family</p>
@@ -147,7 +150,12 @@ function RegisterContent() {
 
         <p style={{ textAlign: "center", color: "#666", fontSize: "0.875rem", marginTop: "1.5rem" }}>
           Already have an account?{" "}
-          <Link href="/login" style={{ color: "#C9A84C", textDecoration: "none" }}>Sign in</Link>
+          <Link
+            href={`/login?next=${encodeURIComponent(nextPath)}`}
+            style={{ color: "#C9A84C", textDecoration: "none" }}
+          >
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

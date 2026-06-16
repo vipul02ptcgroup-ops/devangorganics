@@ -28,7 +28,7 @@ const categoryIconMap: Record<string, React.ReactNode> = {
 
 function ProductsContent() {
   const searchParams = useSearchParams();
-  const { products, categories, loading } = useProducts();
+  const { publicProducts, publicCategories, loading } = useProducts();
   const catParam = searchParams.get("category") || "";
   const [selectedCat, setSelectedCat] = useState(catParam);
   const [sortBy, setSortBy] = useState("featured");
@@ -36,7 +36,7 @@ function ProductsContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const filtered = products
+  const filtered = publicProducts
     .filter((p) => !selectedCat || p.category === selectedCat)
     .filter((p) =>
       !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -55,7 +55,7 @@ function ProductsContent() {
         <p className="text-[#C9A84C] text-[0.7rem] tracking-[0.35em] uppercase mb-2 font-medium">Browse Our Collection</p>
         <h1 className="text-[2.5rem] font-bold text-[#F5F0E8] mb-2" style={{ fontFamily: "Cinzel, serif" }}>
           {selectedCat
-            ? categories.find((c) => c.slug === selectedCat)?.name ?? "Products"
+            ? publicCategories.find((c) => c.slug === selectedCat)?.name ?? "Products"
             : "All Products"}
         </h1>
         <div className="flex items-center justify-center gap-3 mt-2">
@@ -116,9 +116,9 @@ function ProductsContent() {
                 <Package size={14} />
                 All Products
               </span>
-              <span className="text-[#555] text-xs bg-[#0A0A0A] px-1.5 py-0.5">{products.length}</span>
+              <span className="text-[#555] text-xs bg-[#0A0A0A] px-1.5 py-0.5">{publicProducts.length}</span>
             </button>
-            {categories.map((cat) => (
+            {publicCategories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCat(selectedCat === cat.slug ? "" : cat.slug)}
@@ -126,8 +126,8 @@ function ProductsContent() {
                   ${selectedCat === cat.slug ? "text-[#C9A84C]" : "text-[#C8C0B0] hover:text-[#C9A84C]"}`}
               >
                 <span className="flex items-center gap-2">
-                  {categoryIconMap[cat.iconName] ?? <Package size={14} />}
-                  {cat.name}
+                {categoryIconMap[cat.iconName] ?? <Package size={14} />}
+                {cat.name}
                 </span>
                 <span className="text-[#555] text-xs bg-[#0A0A0A] px-1.5 py-0.5">{cat.count}</span>
               </button>
@@ -141,7 +141,7 @@ function ProductsContent() {
             </h3>
             <div className="flex items-center gap-2 text-[0.82rem] text-[#C8C0B0]">
               <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>{products.filter((p) => p.inStock).length} In Stock</span>
+              <span>{publicProducts.filter((p) => p.inStock).length} In Stock</span>
             </div>
           </div>
         </aside>
@@ -195,7 +195,7 @@ function ProductsContent() {
             <div className="flex items-center gap-2 mb-4 flex-wrap">
               <span className="text-[#555] text-xs">Filter:</span>
               <span className="flex items-center gap-1.5 bg-[#C9A84C]/10 border border-[#C9A84C]/30 text-[#C9A84C] text-xs px-3 py-1">
-                {categories.find((c) => c.slug === selectedCat)?.name}
+                {publicCategories.find((c) => c.slug === selectedCat)?.name}
                 <button onClick={() => setSelectedCat("")} className="hover:text-white transition-colors">
                   <X size={11} />
                 </button>

@@ -11,20 +11,25 @@ import {
   updateProfile,
 } from "firebase/auth";
 import {
-  doc,
-  getDoc,
-  onSnapshot,
-  serverTimestamp,
-  setDoc,
-} from "firebase/firestore";
-import {
   createContext,
   useContext,
   useEffect,
   useState,
   type ReactNode,
 } from "react";
+import {
+  ApiRequestError,
+  apiRequest,
+  createAuthHeaders,
+} from "@/lib/client-api";
+import type { AppUserProfile } from "@/lib/api-types";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 
 type AuthContextValue = {
   user: User | null;
@@ -36,58 +41,100 @@ type AuthContextValue = {
   register: (name: string, email: string, password: string) => Promise<void>;
   continueWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
-};
-
-export type UserRole = "admin" | "customer";
-
-export type AppUserProfile = {
-  uid: string;
-  name: string;
-  email: string;
-  photoURL: string;
-  role: UserRole;
-  createdAt?: unknown;
-  updatedAt?: unknown;
+  refreshProfile: (userOverride?: User | null) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
-async function syncUserDocument(user: User) {
+function isFirebaseAdminUnavailable(error: unknown) {
+  return error instanceof ApiRequestError && error.status === 503;
+}
+
+async function syncUserProfileClient(user: User) {
   if (!db) {
-    throw new Error("Firebase is not configured.");
+    throw new Error("Firebase Firestore is not configured.");
   }
 
   const userRef = doc(db, "users", user.uid);
-  const snapshot = await getDoc(userRef);
-  const existingRole = snapshot.data()?.role;
+  const [snapshot, tokenResult] = await Promise.all([
+    getDoc(userRef),
+    user.getIdTokenResult(true),
+  ]);
 
-  if (snapshot.exists()) {
-    await setDoc(
-      userRef,
-      {
-        uid: user.uid,
-        name: user.displayName ?? "",
-        email: user.email ?? "",
-        photoURL: user.photoURL ?? "",
-        role: existingRole ?? "customer",
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
-    return;
+  const existingRole = snapshot.data()?.role;
+  const tokenRole =
+    tokenResult.claims.role === "admin" || tokenResult.claims.admin === true
+      ? "admin"
+      : tokenResult.claims.role === "customer"
+        ? "customer"
+        : null;
+  const resolvedRole =
+    existingRole === "admin" || tokenRole === "admin" ? "admin" : "customer";
+
+  await setDoc(
+    userRef,
+    {
+      uid: user.uid,
+      name: user.displayName ?? "",
+      email: user.email ?? "",
+      photoURL: user.photoURL ?? "",
+      role: resolvedRole,
+      createdAt: snapshot.exists()
+        ? snapshot.data()?.createdAt ?? serverTimestamp()
+        : serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+async function fetchUserProfileClient(user: User) {
+  if (!db) {
+    throw new Error("Firebase Firestore is not configured.");
   }
 
-  await setDoc(userRef, {
-    uid: user.uid,
-    name: user.displayName ?? "",
-    email: user.email ?? "",
-    photoURL: user.photoURL ?? "",
-    role: "customer",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  const snapshot = await getDoc(doc(db, "users", user.uid));
+
+  if (!snapshot.exists()) {
+    throw new Error("User profile was not found.");
+  }
+
+  const data = snapshot.data() as Partial<AppUserProfile>;
+
+  return {
+    uid: data.uid ?? user.uid,
+    name: data.name ?? user.displayName ?? "",
+    email: data.email ?? user.email ?? "",
+    photoURL: data.photoURL ?? user.photoURL ?? "",
+    role: data.role === "admin" ? "admin" : "customer",
+    createdAt:
+      typeof data.createdAt === "string" || data.createdAt === null
+        ? data.createdAt
+        : null,
+    updatedAt:
+      typeof data.updatedAt === "string" || data.updatedAt === null
+        ? data.updatedAt
+        : null,
+  } satisfies AppUserProfile;
+}
+
+async function syncUserProfile(user: User) {
+  const headers = await createAuthHeaders(user, true);
+  await apiRequest<{ profile: AppUserProfile }>("/api/users/sync", {
+    method: "POST",
+    headers,
   });
+}
+
+async function fetchUserProfile(user: User) {
+  const headers = await createAuthHeaders(user);
+  const response = await apiRequest<{ profile: AppUserProfile }>("/api/users/me", {
+    headers,
+  });
+
+  return response.profile;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -96,6 +143,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(true);
 
+  const refreshProfile = async (userOverride?: User | null) => {
+    const activeUser = userOverride ?? auth?.currentUser ?? user;
+
+    if (!activeUser) {
+      setUserProfile(null);
+      setRoleLoading(false);
+      return;
+    }
+
+    setRoleLoading(true);
+
+    try {
+      await syncUserProfileClient(activeUser);
+      const nextProfile = await fetchUserProfileClient(activeUser);
+      setUserProfile(nextProfile);
+    } catch (error) {
+      try {
+        await syncUserProfile(activeUser);
+        const nextProfile = await fetchUserProfile(activeUser);
+        setUserProfile({
+          ...nextProfile,
+          role: nextProfile.role === "admin" ? "admin" : "customer",
+        });
+        return;
+      } catch (serverError) {
+        if (!isFirebaseAdminUnavailable(serverError)) {
+          console.error("Failed to load user profile", serverError);
+        }
+      }
+
+      if (!isFirebaseAdminUnavailable(error)) {
+        try {
+          await syncUserProfileClient(activeUser);
+          const nextProfile = await fetchUserProfileClient(activeUser);
+          setUserProfile(nextProfile);
+          return;
+        } catch (retryError) {
+          console.error("Failed to load user profile from Firestore", retryError);
+        }
+      }
+
+      setUserProfile(null);
+    } finally {
+      setRoleLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!auth || !isFirebaseConfigured) {
       setLoading(false);
@@ -103,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
       setUser(nextUser);
       setLoading(false);
 
@@ -113,56 +207,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Clear any previous user's role immediately and require a fresh Firestore check.
       setUserProfile(null);
-      setRoleLoading(true);
-
-      try {
-        await syncUserDocument(nextUser);
-      } catch (error) {
-        console.error("Failed to sync user document", error);
-      }
+      void refreshProfile(nextUser);
     });
 
     return unsubscribe;
   }, []);
-
-  useEffect(() => {
-    if (!db || !user) {
-      setRoleLoading(false);
-      return;
-    }
-
-    setRoleLoading(true);
-    const unsubscribe = onSnapshot(
-      doc(db, "users", user.uid),
-      (snapshot) => {
-        if (!snapshot.exists()) {
-          setUserProfile(null);
-          setRoleLoading(false);
-          return;
-        }
-
-        const data = snapshot.data() as AppUserProfile;
-        setUserProfile({
-          uid: data.uid ?? user.uid,
-          name: data.name ?? user.displayName ?? "",
-          email: data.email ?? user.email ?? "",
-          photoURL: data.photoURL ?? user.photoURL ?? "",
-          role: data.role === "admin" ? "admin" : "customer",
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-        });
-        setRoleLoading(false);
-      },
-      (error) => {
-        console.error("Failed to read user role", error);
-        setRoleLoading(false);
-      }
-    );
-
-    return unsubscribe;
-  }, [user]);
 
   const value: AuthContextValue = {
     user,
@@ -170,13 +220,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     roleLoading,
     isConfigured: isFirebaseConfigured,
+    refreshProfile,
     async login(email, password) {
       if (!auth) {
         throw new Error("Firebase is not configured.");
       }
 
       const credential = await signInWithEmailAndPassword(auth, email, password);
-      await syncUserDocument(credential.user);
+      await refreshProfile(credential.user);
     },
     async register(name, email, password) {
       if (!auth) {
@@ -190,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
 
       await updateProfile(credential.user, { displayName: name });
-      await syncUserDocument(credential.user);
+      await refreshProfile(credential.user);
     },
     async continueWithGoogle() {
       if (!auth) {
@@ -198,7 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const credential = await signInWithPopup(auth, googleProvider);
-      await syncUserDocument(credential.user);
+      await refreshProfile(credential.user);
     },
     async logout() {
       if (!auth) {
@@ -206,6 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       await signOut(auth);
+      setUserProfile(null);
     },
   };
 
@@ -232,6 +284,7 @@ export function useUserRole() {
     loading,
     roleLoading,
     isAdmin: userProfile?.role === "admin",
-    isCustomer: Boolean(user) && (userProfile?.role ?? "customer") === "customer",
+    isCustomer:
+      Boolean(user) && (userProfile?.role ?? "customer") === "customer",
   };
 }
